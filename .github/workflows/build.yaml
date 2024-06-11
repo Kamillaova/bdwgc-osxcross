@@ -1,0 +1,37 @@
+name: Build Boehm GC
+
+on:
+  push:
+    branches:
+    - slave
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: 'ghcr.io/crazy-max/osxcross:latest'
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: ci
+
+      - name: Checkout Boehm GC
+        uses: actions/checkout@v4
+        with:
+          repository: ivmai/bdwgc
+
+      - name: Configure CMake Build
+        run: |
+          cmake -G Ninja -B build \
+            -DCMAKE_TOOLCHAIN_FILE=/ci/aarch64-darwin.cmake
+
+      - name: CMake Build
+        run: |
+          cmake --build build
